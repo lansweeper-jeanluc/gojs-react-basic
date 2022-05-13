@@ -33,17 +33,17 @@ class App extends React.Component<{}, AppState> {
     super(props);
     this.state = {
       nodeDataArray: [
-        { key: 0, text: 'Alpha', color: 'lightblue', loc: '0 0' },
-        { key: 1, text: 'Beta', color: 'orange', loc: '150 0' },
-        { key: 2, text: 'Gamma', color: 'lightgreen', loc: '0 150' },
-        { key: 3, text: 'Delta', color: 'pink', loc: '150 150' }
+        {key: 0, text: 'Alpha', color: 'lightblue', loc: '0 0'},
+        {key: 1, text: 'Beta', color: 'orange', loc: '150 0'},
+        {key: 2, text: 'Gamma', color: 'lightgreen', loc: '0 150'},
+        {key: 3, text: 'Delta', color: 'pink', loc: '150 150'}
       ],
       linkDataArray: [
-        { key: -1, from: 0, to: 1 },
-        { key: -2, from: 0, to: 2 },
-        { key: -3, from: 1, to: 1 },
-        { key: -4, from: 2, to: 3 },
-        { key: -5, from: 3, to: 0 }
+        {key: -1, from: 0, to: 1, highlight: false},
+        {key: -2, from: 0, to: 2, highlight: false},
+        {key: -3, from: 1, to: 1, highlight: false},
+        {key: -4, from: 2, to: 3, highlight: false},
+        {key: -5, from: 3, to: 0, highlight: false}
       ],
       modelData: {
         canRelink: true
@@ -64,26 +64,6 @@ class App extends React.Component<{}, AppState> {
   }
 
   /**
-   * Update map of node keys to their index in the array.
-   */
-  private refreshNodeIndex(nodeArr: Array<go.ObjectData>) {
-    this.mapNodeKeyIdx.clear();
-    nodeArr.forEach((n: go.ObjectData, idx: number) => {
-      this.mapNodeKeyIdx.set(n.key, idx);
-    });
-  }
-
-  /**
-   * Update map of link keys to their index in the array.
-   */
-  private refreshLinkIndex(linkArr: Array<go.ObjectData>) {
-    this.mapLinkKeyIdx.clear();
-    linkArr.forEach((l: go.ObjectData, idx: number) => {
-      this.mapLinkKeyIdx.set(l.key, idx);
-    });
-  }
-
-  /**
    * Handle any relevant DiagramEvents, in this case just selection changes.
    * On ChangedSelection, find the corresponding data and set the selectedData state.
    * @param e a GoJS DiagramEvent
@@ -100,8 +80,20 @@ class App extends React.Component<{}, AppState> {
                 const idx = this.mapNodeKeyIdx.get(sel.key);
                 if (idx !== undefined && idx >= 0) {
                   const nd = draft.nodeDataArray[idx];
+                  const selected = draft.linkDataArray.filter(l => l.from == idx || l.to == idx);
+
+                  console.log("selected", selected);
+                  draft.linkDataArray.map(l => {
+                    if (selected && selected.find(sl => sl.key == l.key)) {
+                      l.highlight = true
+                    } else {
+                      l.highlight = false
+                    }
+                  });
+                  console.log("draft.linkDataArray", draft.linkDataArray);
                   draft.selectedData = nd;
                 }
+
               } else if (sel instanceof go.Link) {
                 const idx = this.mapLinkKeyIdx.get(sel.key);
                 if (idx !== undefined && idx >= 0) {
@@ -116,7 +108,8 @@ class App extends React.Component<{}, AppState> {
         );
         break;
       }
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -253,7 +246,7 @@ class App extends React.Component<{}, AppState> {
   public handleRelinkChange(e: any) {
     const target = e.target;
     const value = target.checked;
-    this.setState({ modelData: { canRelink: value }, skipsDiagramUpdate: false });
+    this.setState({modelData: {canRelink: value}, skipsDiagramUpdate: false});
   }
 
   public render() {
@@ -261,9 +254,9 @@ class App extends React.Component<{}, AppState> {
     let inspector;
     if (selectedData !== null) {
       inspector = <SelectionInspector
-                    selectedData={this.state.selectedData}
-                    onInputChange={this.handleInputChange}
-                  />;
+        selectedData={this.state.selectedData}
+        onInputChange={this.handleInputChange}
+      />;
     }
 
     return (
@@ -275,7 +268,8 @@ class App extends React.Component<{}, AppState> {
           you can inspect the React state and see it updated as changes happen.
         </p>
         <p>
-          Check out the <a href='https://gojs.net/latest/intro/react.html' target='_blank' rel='noopener noreferrer'>Intro page on using GoJS with React</a> for more information.
+          Check out the <a href='https://gojs.net/latest/intro/react.html' target='_blank' rel='noopener noreferrer'>Intro
+          page on using GoJS with React</a> for more information.
         </p>
         <DiagramWrapper
           nodeDataArray={this.state.nodeDataArray}
@@ -291,11 +285,31 @@ class App extends React.Component<{}, AppState> {
             type='checkbox'
             id='relink'
             checked={this.state.modelData.canRelink}
-            onChange={this.handleRelinkChange} />
+            onChange={this.handleRelinkChange}/>
         </label>
         {inspector}
       </div>
     );
+  }
+
+  /**
+   * Update map of node keys to their index in the array.
+   */
+  private refreshNodeIndex(nodeArr: Array<go.ObjectData>) {
+    this.mapNodeKeyIdx.clear();
+    nodeArr.forEach((n: go.ObjectData, idx: number) => {
+      this.mapNodeKeyIdx.set(n.key, idx);
+    });
+  }
+
+  /**
+   * Update map of link keys to their index in the array.
+   */
+  private refreshLinkIndex(linkArr: Array<go.ObjectData>) {
+    this.mapLinkKeyIdx.clear();
+    linkArr.forEach((l: go.ObjectData, idx: number) => {
+      this.mapLinkKeyIdx.set(l.key, idx);
+    });
   }
 }
 

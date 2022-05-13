@@ -118,8 +118,8 @@ export class DiagramWrapper extends React.Component<DiagramProps, {}> {
       $(go.Link,
         new go.Binding('relinkableFrom', 'canRelink').ofModel(),
         new go.Binding('relinkableTo', 'canRelink').ofModel(),
-        $(go.Shape),
-        $(go.Shape, { toArrow: 'Standard' })
+        $(go.Shape, new go.Binding("stroke", "highlight", c => c ? "red" : "black")),
+        $(go.Shape, { toArrow: 'Standard' }, new go.Binding("stroke", "highlight", c => c ? "red" : "black"))
       );
 
     return diagram;
